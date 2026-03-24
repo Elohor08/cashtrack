@@ -1,6 +1,5 @@
 "use client";
 import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -12,43 +11,42 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchUser = async () => {
-    try {
-      const res = await axios.get('/api/auth/me');
-      setUser(res.data);
-    } catch (error) {
-      console.error(error);
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
+    const users = JSON.parse(localStorage.getItem('cashtrack_users') || '[]');
+    if (token && users.length > 0) {
+       const currentUser = users.find(u => u.id === token);
+       if (currentUser) setUser(currentUser);
     }
     setLoading(false);
-  };
+  }, []);
 
   const login = async (email, password) => {
-    const res = await axios.post('/api/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
-    setUser(res.data.user);
+    const users = JSON.parse(localStorage.getItem('cashtrack_users') || '[]');
+    const u = users.find(u => u.email === email && u.password === password);
+    if (!u) {
+       const error = new Error('Invalid credentials');
+       error.response = { data: { msg: 'Invalid credentials' } };
+       throw error;
+    }
+    localStorage.setItem('token', u.id);
+    setUser(u);
   };
 
   const signup = async (name, email, password) => {
-    const res = await axios.post('/api/auth/signup', { name, email, password });
-    localStorage.setItem('token', res.data.token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
-    setUser(res.data.user);
+    const users = JSON.parse(localStorage.getItem('cashtrack_users') || '[]');
+    if (users.find(u => u.email === email)) {
+       const error = new Error('User already exists');
+       error.response = { data: { msg: 'User already exists' } };
+       throw error;
+    }
+    const newUser = { id: Date.now().toString(), name, email, password };
+    users.push(newUser);
+    localStorage.setItem('cashtrack_users', JSON.stringify(users));
+    localStorage.setItem('token', newUser.id);
+    setUser(newUser);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
 

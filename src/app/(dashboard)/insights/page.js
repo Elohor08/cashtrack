@@ -1,11 +1,10 @@
 "use client";
 import { useState } from 'react';
 import { useData } from '@/context/DataContext';
-import axios from 'axios';
 import { Lightbulb, Sparkles, Quote, Loader2, ArrowRight } from 'lucide-react';
 
 const Insights = () => {
-  const { alerts } = useData();
+  const { alerts, getInsights } = useData();
   const [aiAdvice, setAiAdvice] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
 
@@ -15,8 +14,8 @@ const Insights = () => {
   const fetchAiAdvice = async () => {
     setLoadingAi(true);
     try {
-      const res = await axios.get('/api/ai-insights');
-      setAiAdvice(res.data.advice);
+      const res = await getInsights();
+      setAiAdvice(res.advice);
     } catch (err) {
       console.error(err);
       setAiAdvice("Unable to fetch AI insights at this moment.");

@@ -1,11 +1,10 @@
 "use client";
 import { useState } from 'react';
 import { useData } from '@/context/DataContext';
-import axios from 'axios';
 import { Plus, Trash2, Receipt, TrendingUp, TrendingDown } from 'lucide-react';
 
 const Transactions = () => {
-  const { transactions, pockets, fetchData } = useData();
+  const { transactions, pockets, fetchData, addTransaction, deleteTransaction } = useData();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     pocketId: '',
@@ -18,7 +17,7 @@ const Transactions = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/transactions', formData);
+      await addTransaction(formData);
       setShowModal(false);
       setFormData({
         pocketId: '',
@@ -36,8 +35,7 @@ const Transactions = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this transaction?")) {
         try {
-            await axios.delete(`/api/transactions/${id}`);
-            fetchData();
+            await deleteTransaction(id);
         } catch (err) {
             console.error(err);
         }

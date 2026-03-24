@@ -1,11 +1,10 @@
 "use client";
 import { useState } from 'react';
 import { useData } from '@/context/DataContext';
-import axios from 'axios';
 import { Wallet, Plus, Trash2, Edit } from 'lucide-react';
 
 const Pockets = () => {
-  const { pockets, fetchData } = useData();
+  const { pockets, fetchData, addPocket, updatePocket, deletePocket } = useData();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', type: 'income', balance: 0 });
   const [editingId, setEditingId] = useState(null);
@@ -14,9 +13,9 @@ const Pockets = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await axios.put(`/api/pockets/${editingId}`, formData);
+        await updatePocket(editingId, formData);
       } else {
-        await axios.post('/api/pockets', formData);
+        await addPocket(formData);
       }
       setShowModal(false);
       setFormData({ name: '', type: 'income', balance: 0 });
@@ -36,8 +35,7 @@ const Pockets = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure? This will also delete all linked transactions.")) {
         try {
-            await axios.delete(`/api/pockets/${id}`);
-            fetchData();
+            await deletePocket(id);
         } catch (err) {
             console.error(err);
         }

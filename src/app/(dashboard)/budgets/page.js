@@ -1,11 +1,10 @@
 "use client";
 import { useState } from 'react';
 import { useData } from '@/context/DataContext';
-import axios from 'axios';
 import { Plus, Trash2, PieChart } from 'lucide-react';
 
 const Budgets = () => {
-  const { budgets, transactions, fetchData } = useData();
+  const { budgets, transactions, fetchData, addBudget, deleteBudget } = useData();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     category: '',
@@ -18,7 +17,7 @@ const Budgets = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/budgets', formData);
+      await addBudget(formData);
       setShowModal(false);
       setFormData({
         category: '',
@@ -34,8 +33,7 @@ const Budgets = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this budget?")) {
         try {
-            await axios.delete(`/api/budgets/${id}`);
-            fetchData();
+            await deleteBudget(id);
         } catch (err) {
             console.error(err);
         }
